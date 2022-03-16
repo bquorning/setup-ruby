@@ -1,0 +1,30 @@
+name: Measure how fast Bundler can install
+on: push
+
+jobs:
+  measure-bundle-install-speed-no-makeflags:
+    runs-on: ubuntu-latest
+    name: no makeflags
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
+        with:
+          ruby-version: '3.0'
+      - run: bundle package --no-install
+      - run: bundle install --local --jobs 4
+
+  measure-bundle-install-speed-with-makeflags:
+    strategy:
+      fail-fast: false
+      matrix:
+        jobs: [2, 4, 6, 8, 10, 12]
+
+    name: makeflags with ${{ matrix.jobs }} jobs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
+        with:
+          ruby-version: '3.0'
+      - run: bundle package --no-install
+      - run: MAKEFLAGS="make --jobs ${{ matrix.jobs }}" bundle install --local --jobs 4
